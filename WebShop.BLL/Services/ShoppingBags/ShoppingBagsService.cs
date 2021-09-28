@@ -12,9 +12,11 @@ namespace WebShop.BLL.Services.ShoppingBags
     public class ShoppingBagsService : IShoppingBagsService
     {
         private readonly IShoppingBagRepository _ShoppingBagsRepository;
-        public ShoppingBagsService(IShoppingBagRepository ShoppingBagsRepository)
+        UserManager<IdentityUser> _userManager;
+        public ShoppingBagsService(IShoppingBagRepository ShoppingBagsRepository, UserManager<IdentityUser> userManager)
         {
             _ShoppingBagsRepository = ShoppingBagsRepository;
+            _userManager = userManager;
         }
 
 
@@ -24,9 +26,15 @@ namespace WebShop.BLL.Services.ShoppingBags
         }
         public int AddItem(IdentityUser user, int myProductId, int ProductCategory, int myQuantity)
         {
+            //myQuantity = 1;
+            //string test = User.Identity.Name;
+            //var user = await _userManager.FindByNameAsync(User.Identity.Name);
             return _ShoppingBagsRepository.AddItem(user, myProductId, ProductCategory, myQuantity);
         }
-
+        public async Task<List<int>> GetShoppingItemsByUserAsync(string username)
+        {
+            return await _ShoppingBagsRepository.GetShoppingItemsByUserAsync(username);
+        }
         public async Task<bool> DeleteConfirmedAsync(int? id)
         {
             return await _ShoppingBagsRepository.DeleteConfirmedAsync(id);

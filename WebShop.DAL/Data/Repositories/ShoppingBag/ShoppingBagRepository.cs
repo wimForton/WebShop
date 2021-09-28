@@ -28,6 +28,25 @@ namespace WebShop.DAL.Data.Repositories.ShoppingBag
             await _context.SaveChangesAsync();
             //return false;
         }
+        public async Task<List<int>> GetShoppingItemsByUserAsync(string? username)
+        {
+            List<int> idPairs = new List<int>();
+            if (username == null || username == "")
+            {
+                return null;
+            }
+            var user = await _userManager.FindByNameAsync(username);
+            var shoppingBag = await _context.ShoppingBags
+                .FirstOrDefaultAsync(m => m.IdentityUserId == user.Id);
+            var shoppingItems = await _context.ShoppingItems.Where(b => b.myShoppingBagId == shoppingBag.Id).ToListAsync();
+            foreach (var item in shoppingItems)
+            {
+                idPairs.Add(item.ProductCategory);
+                idPairs.Add(item.myProductid);
+            }
+            
+            return idPairs;
+        }
         public async Task<ShoppingBagModel> GetShoppingBagByIdAsync(int? id)
         {
             if (id == null)

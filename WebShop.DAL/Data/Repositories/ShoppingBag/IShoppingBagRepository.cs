@@ -12,6 +12,7 @@ namespace WebShop.DAL.Data.Repositories.ShoppingBag
     {
         //public void CreateShoppingBag(string userName);
         public Task CreateShoppingBagAsync(string userName);
+        public Task<List<int>> GetShoppingItemsByUserAsync(string username);
         public Task<ShoppingBagModel> GetShoppingBagByIdAsync(int? id);
         public Task<ShoppingBagModel> GetShoppingBagWithDataByIdAsync(int? id);
         public Task<bool> DeleteConfirmedAsync(int? id);

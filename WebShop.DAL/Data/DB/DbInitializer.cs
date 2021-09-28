@@ -5,11 +5,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.IO;
+using WebShop.DAL.Data.DB;
+using WebShop.DAL.Data.Repositories.Account;
+
+using Microsoft.AspNetCore.Identity;
 
 namespace WebShop.Data
 {
     public class DbInitializer
     {
+        private readonly UserManager<IdentityUser> _userManager;
+        public DbInitializer(UserManager<IdentityUser> userManager)
+        {
+            _userManager = userManager;
+        }
         public static void Initialize(WebShopContext context)
         {
             context.Database.EnsureCreated();
@@ -17,7 +26,27 @@ namespace WebShop.Data
             {
                 return;   // DB has been seeded
             }
+            CreateSomeSpaceObjects(context);
+            //CreateSomeUsers(context);
 
+
+        }
+
+        private static async Task CreateSomeUsers(WebShopContext context, UserManager<IdentityUser> _userManager)
+        {
+            var user = new IdentityUser { UserName = "Jan", PasswordHash = "Jan12345", Email = "jan@jan.be" };
+            var result = await _userManager.CreateAsync(user, user.PasswordHash);
+            if (result.Succeeded)
+            {
+                //Hier maken we de default shoppingbag en voegen ze toe aan de db
+                context.ShoppingBags.Add(new ShoppingBagModel { IdentityUserId = user.Id, Date = System.DateTime.Now });
+                context.SaveChanges();
+            }
+
+        }
+
+        private static void CreateSomeSpaceObjects(WebShopContext context)
+        {
             List<string> moonNames = LoadNames("H:/cursus_informatica/aspdotcore/WebShop/WebShop/moonNames.txt");
             List<string> planetNames = LoadNames("H:/cursus_informatica/aspdotcore/WebShop/WebShop/planetNames.txt");
             List<string> starNames = LoadNames("H:/cursus_informatica/aspdotcore/WebShop/WebShop/starNames.txt");
@@ -72,73 +101,6 @@ namespace WebShop.Data
             }
             return result;
         }
-    }
-    public class FillSpaceObjectList<T1> where T1 : ProductModel, new()
-    {
-        public List<T1> mySpaceObjectList = new List<T1>();
-
-        //constructor
-        public FillSpaceObjectList(string preFix, List<string> SpaceObjectNames)
-        {
-            CreateList(preFix, SpaceObjectNames);
-        }
-        public void CreateList(string preFix, List<string> SpaceObjectNames)
-        {
-            Random myRandom = new Random();
-            for (int i = 0; i < SpaceObjectNames.Count(); i++)
-            {
-                string myName = "misteryObject";
-                if (SpaceObjectNames.Count() > i + 1)
-                {
-                    myName = SpaceObjectNames[i];
-                }
-                double orbit = myRandom.NextDouble() * 300 + 2;
-                int price = myRandom.Next(2000, 15000);
-                string frameDigits = Digits(i);
-                T1 mySpaceObject = new T1();
-                mySpaceObject.Imagepath = $"images/{preFix}{frameDigits}.png";
-                mySpaceObject.Price = price;
-                mySpaceObject.Name = $"{myName}";
-                mySpaceObject.Available = true;
-
-                if (mySpaceObject.GetType() == typeof(MoonModel))
-                {
-                    mySpaceObject.ProductCategory = 1;
-                    mySpaceObject.SerialNumber = "MN_" + Convert.ToString(myRandom.Next(100000, 999999)) + "_" + Convert.ToString(i);
-                }
-                if (mySpaceObject.GetType() == typeof(PlanetModel))
-                {
-                    mySpaceObject.ProductCategory = 2;
-                    mySpaceObject.SerialNumber = "PL_" + Convert.ToString(myRandom.Next(100000, 999999)) + "_" + Convert.ToString(i);
-                }
-                if (mySpaceObject.GetType() == typeof(StarModel))
-                {
-                    mySpaceObject.ProductCategory = 3;
-                    mySpaceObject.SerialNumber = "ST_" + Convert.ToString(myRandom.Next(100000, 999999)) + "_" + Convert.ToString(i);
-                }
-                mySpaceObjectList.Add(mySpaceObject);
-            }
-            //return inList;
-        }
-        private static string Digits(int number)
-        {
-            int i = number;
-            string frameDigits = "";
-            if (i < 9)
-            {
-                frameDigits = $"000{i + 1}";
-            }
-            else if (i < 99)
-            {
-                frameDigits = $"00{ i + 1}";
-            }
-            else
-            {
-                frameDigits = $"0{i + 1}";
-            }
-            return frameDigits;
-        }
-
     }
 
 }
