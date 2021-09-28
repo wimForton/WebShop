@@ -18,11 +18,13 @@ namespace WebShop.API.Controllers
     public class ShoppingBagsController : ControllerBase
     {
         private readonly IShoppingBagsService _ShoppingBagsService;
+        private readonly IProductsService _ProductsService;
         private readonly UserManager<IdentityUser> _userManager;
-        public ShoppingBagsController(IShoppingBagsService shoppingBagsService, UserManager<IdentityUser> userManager)
+        public ShoppingBagsController(IShoppingBagsService shoppingBagsService, IProductsService productsService,UserManager<IdentityUser> userManager)
         {
             _userManager = userManager;
             _ShoppingBagsService = shoppingBagsService;
+            _ProductsService = productsService;
         }
 
         //private readonly IProductService
@@ -55,8 +57,29 @@ namespace WebShop.API.Controllers
         {
             //json settings in startup: referenceHandler.Preserve om loop te stoppen
             //loop removed door enkel de nodige parameters in een list te steken, hackerdehack, dees was kak...
+            //List<int> itemsList = await _ShoppingBagsService.GetShoppingItemsByUserAsync(username);
+
             return await _ShoppingBagsService.GetShoppingItemsByUserAsync(username);
         }
+
+        [HttpGet("ProductsByUserName/{username}")]
+        public async Task<List<ProductModel>> GetShoppingProductsByUserAsync(string username)
+        {
+
+            List<int> itemsList = await _ShoppingBagsService.GetShoppingItemsByUserAsync(username);
+            List<ProductModel> productsList = new List<ProductModel>();
+
+            for (int i = 0; i < itemsList.Count; i = i + 2)
+            {
+                if(itemsList[i] == 1)productsList.Add(await _ProductsService.GetMoonByIdAsync(i+1) as ProductModel);
+                if (itemsList[i] == 2) productsList.Add(await _ProductsService.GetPlanetByIdAsync(i + 1) as ProductModel);
+                if (itemsList[i] == 3) productsList.Add(await _ProductsService.GetStarByIdAsync(i + 1) as ProductModel);
+            }
+            var test = productsList;
+
+            return productsList;
+        }
+
         [HttpPost("AddItem/{myProductId}/{ProductCategory}/{UserName}")]
         public async Task<int> AddItem(int myProductId, int ProductCategory, string UserName)
         {
